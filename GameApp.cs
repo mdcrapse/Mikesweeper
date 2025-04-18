@@ -18,6 +18,8 @@ public class GameApp : Game
 
     private MouseState currentMouse;
     private MouseState previousMouse;
+    /// <summary>The minefield index the mouse is currently hovering.</summary>
+    private Point cursor;
 
     public GameApp()
     {
@@ -26,22 +28,7 @@ public class GameApp : Game
         IsMouseVisible = true;
 
         minefield.Resize(10, 10);
-    }
-
-    private void RandomizeMinefield(int x, int y, int max_bombs = 15)
-    {
-        // Helps avoid a potential infinite loop
-        max_bombs = Math.Min(max_bombs, minefield.TotalCells - 9);
-        var rng = new Random();
-        // This can potentially lead to a near-infinite loop if a particular cell is never planted with a bomb.
-        while(max_bombs > 0)
-        {
-            var xx = rng.Next(minefield.Width);
-            var yy = rng.Next(minefield.Height);
-            if (xx >= x - 1 && xx <= x + 1 && yy >= y - 1 && yy <= y + 1) continue;
-            minefield.PlantBomb(xx, yy);
-            max_bombs--;
-        }
+        minefield.TargetBombCount = 15;
     }
 
     private bool HasWon()
@@ -72,17 +59,32 @@ public class GameApp : Game
 
     protected override void Update(GameTime gameTime)
     {
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
+        if (IsExiting()) Exit();
 
-        previousMouse = currentMouse;
-        currentMouse = Mouse.GetState();
+        UpdateMouse();
+        UpdateDiscovery();
+        UpdateFlag();
 
-        var pos = currentMouse.Position;
-        var xx = (int)(pos.X / 16f / zoom);
-        var yy = (int)(pos.Y / 16f / zoom);
-        if (currentMouse.LeftButton == ButtonState.Pressed
-            && previousMouse.LeftButton == ButtonState.Released)
+        base.Update(gameTime);
+    }
+
+    private bool IsExiting() {
+        return GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed
+            || Keyboard.GetState().IsKeyDown(Keys.Escape);
+    }
+
+    private bool IsDiscoverButtonJustReleased() {
+        return currentMouse.LeftButton == ButtonState.Pressed
+            && previousMouse.LeftButton == ButtonState.Released;
+    }
+
+    private bool IsFlagButtonJustReleased() {
+        return currentMouse.RightButton == ButtonState.Pressed
+            && previousMouse.RightButton == ButtonState.Released;
+    }
+
+    private void UpdateDiscovery() {
+        if (IsDiscoverButtonJustReleased())
         {
             // Discover cell
             if (game_over)
@@ -93,26 +95,29 @@ public class GameApp : Game
             }
             else
             {
-                if (!has_started)
-                {
-                    has_started = true;
-                    RandomizeMinefield(xx, yy);
+                if (!has_started) has_started = true;
+                if (minefield.Discover(cursor.X, cursor.Y) && minefield.IsBomb(cursor.X, cursor.Y)) {
+                    game_over = true;
                 }
-                game_over = minefield.Discover(xx, yy);
                 if (!game_over) game_over = HasWon();
             }
         }
+    }
 
+    private void UpdateFlag() {
         if (has_started
             && !game_over
-            && currentMouse.RightButton == ButtonState.Pressed
-            && previousMouse.RightButton == ButtonState.Released)
+            && IsFlagButtonJustReleased())
         {
-            // Flag cell
-            minefield.ToggleFlag(xx, yy);
+            minefield.ToggleFlag(cursor.X, cursor.Y);
         }
+    }
 
-        base.Update(gameTime);
+    private void UpdateMouse() {
+        previousMouse = currentMouse;
+        currentMouse = Mouse.GetState();
+        var pos = currentMouse.Position;
+        cursor = minefield.PositionToIndex(pos.X / zoom, pos.Y / zoom);
     }
 
     protected override void Draw(GameTime gameTime)
