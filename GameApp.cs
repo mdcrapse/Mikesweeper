@@ -20,6 +20,8 @@ public class GameApp : Game
     private MouseState previousMouse;
     /// <summary>The minefield index the mouse is currently hovering.</summary>
     private Point cursor;
+    /// <summary>The number of seconds the user has been minesweeping since the first discovered cell.</summary>
+    private float time;
 
     public GameApp()
     {
@@ -65,6 +67,7 @@ public class GameApp : Game
         UpdateMouse();
         UpdateDiscovery();
         UpdateFlag();
+        if (!game_over && has_started) time += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         base.Update(gameTime);
     }
@@ -90,9 +93,7 @@ public class GameApp : Game
             // Discover cell
             if (game_over)
             {
-                has_started = false;
-                game_over = false;
-                minefield.Reset();
+                Restart();
             }
             else
             {
@@ -121,12 +122,19 @@ public class GameApp : Game
         cursor = minefield.PositionToIndex(pos.X / zoom, pos.Y / zoom);
     }
 
+    private void Restart() {
+        time = 0;
+        has_started = false;
+        game_over = false;
+        minefield.Reset();
+    }
+
     private void DrawNumber(Vector2 pos, int n, int digits) {
         var neg = n < 0;
         n = Math.Abs(n);
         pos.X += SpriteSheet.EmptyNumber.Width * digits;
         // Draws the number
-        while (digits-- >= 0) {
+        while (digits-- > 0) {
             int d = n % 10;
             n /= 10;
             pos.X -= SpriteSheet.EmptyNumber.Width;
@@ -141,7 +149,7 @@ public class GameApp : Game
             _spriteBatch.Draw(spriteTexture, pos, SpriteSheet.NegativeNumber, Color.White);
         }
         // Draws the empty digits
-        while (digits-- >= 0) {
+        while (digits-- > 0) {
             pos.X -= SpriteSheet.EmptyNumber.Width;
             _spriteBatch.Draw(spriteTexture, pos, SpriteSheet.EmptyNumber, Color.White);
         }
@@ -179,8 +187,8 @@ public class GameApp : Game
             }
         }
 
-        DrawNumber(Vector2.Zero, minefield.BombCount - minefield.FlagCount, 4);
-
+        DrawNumber(Vector2.Zero, minefield.BombCount - minefield.FlagCount, 3);
+        DrawNumber(new Vector2(minefield.Width * 16 - 13 * 3, 0f), (int)time, 3);
 
         _spriteBatch.End();
 
