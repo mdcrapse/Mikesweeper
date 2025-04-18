@@ -161,6 +161,16 @@ public class GameApp : Game
 
         _spriteBatch.Begin(transformMatrix: Matrix.CreateScale(zoom, zoom, 1f), samplerState: SamplerState.PointClamp);
 
+        DrawMinefield();
+        DrawNumber(Vector2.Zero, minefield.BombCount - minefield.FlagCount, 3);
+        DrawNumber(new Vector2(minefield.Width * 16 - 13 * 3, 0f), (int)time, 3);
+
+        _spriteBatch.End();
+
+        base.Draw(gameTime);
+    }
+
+    private void DrawMinefield() {
         for (int yy = 0; yy < minefield.Width; yy++)
         {
             for (int xx = 0; xx < minefield.Height; xx++)
@@ -186,12 +196,5 @@ public class GameApp : Game
                 }
             }
         }
-
-        DrawNumber(Vector2.Zero, minefield.BombCount - minefield.FlagCount, 3);
-        DrawNumber(new Vector2(minefield.Width * 16 - 13 * 3, 0f), (int)time, 3);
-
-        _spriteBatch.End();
-
-        base.Draw(gameTime);
     }
 }
