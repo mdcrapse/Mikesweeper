@@ -29,6 +29,7 @@ public class GameApp : Game
 
         minefield.Resize(10, 10);
         minefield.TargetBombCount = 15;
+        minefield.Position.Y = 23;
     }
 
     private bool HasWon()
@@ -45,7 +46,7 @@ public class GameApp : Game
     protected override void Initialize()
     {
         _graphics.PreferredBackBufferWidth = minefield.Width * 16 * zoom;
-        _graphics.PreferredBackBufferHeight = minefield.Height * 16 * zoom;
+        _graphics.PreferredBackBufferHeight = (minefield.Height * 16 + 23) * zoom;
         _graphics.ApplyChanges();
 
         base.Initialize();
@@ -120,6 +121,32 @@ public class GameApp : Game
         cursor = minefield.PositionToIndex(pos.X / zoom, pos.Y / zoom);
     }
 
+    private void DrawNumber(Vector2 pos, int n, int digits) {
+        var neg = n < 0;
+        n = Math.Abs(n);
+        pos.X += SpriteSheet.EmptyNumber.Width * digits;
+        // Draws the number
+        while (digits-- >= 0) {
+            int d = n % 10;
+            n /= 10;
+            pos.X -= SpriteSheet.EmptyNumber.Width;
+
+            _spriteBatch.Draw(spriteTexture, pos, SpriteSheet.Numbers[d], Color.White);
+            if (n == 0) break;
+        }
+        // Draws the negative sign
+        if (neg) {
+            digits--;
+            pos.X -= SpriteSheet.EmptyNumber.Width;
+            _spriteBatch.Draw(spriteTexture, pos, SpriteSheet.NegativeNumber, Color.White);
+        }
+        // Draws the empty digits
+        while (digits-- >= 0) {
+            pos.X -= SpriteSheet.EmptyNumber.Width;
+            _spriteBatch.Draw(spriteTexture, pos, SpriteSheet.EmptyNumber, Color.White);
+        }
+    }
+
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
@@ -131,7 +158,7 @@ public class GameApp : Game
             for (int xx = 0; xx < minefield.Height; xx++)
             {
                 var cell = minefield.Cell(xx, yy);
-                var pos = new Vector2(xx * 16, yy * 16);
+                var pos = new Vector2(xx * 16, yy * 16) + new Vector2(minefield.Position.X, minefield.Position.Y);
 
                 if (!cell.discovered)
                 {
@@ -151,6 +178,8 @@ public class GameApp : Game
                 }
             }
         }
+
+        DrawNumber(Vector2.Zero, minefield.BombCount - minefield.FlagCount, 4);
 
 
         _spriteBatch.End();

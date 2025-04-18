@@ -39,6 +39,8 @@ public class Minefield
     public int TotalCells { get => Width * Height; }
     /// <summary>The number of bombs in the minefield.</summary>
     public int BombCount { get; private set; }
+    /// <summary>The number of flags in the minefield.</summary>
+    public int FlagCount { get; private set; }
     /// <summary>The number of bombs to generate when randomly planting bombs.</summary>
     public int TargetBombCount;
 
@@ -62,6 +64,7 @@ public class Minefield
         grid = new Cell[width, height];
         DiscoveredCells = 0;
         BombCount = 0;
+        FlagCount = 0;
     }
 
     /// <summary>Checks if the specified position is within the bounds of the minefield grid.</summary>
@@ -94,7 +97,10 @@ public class Minefield
     public bool ToggleFlag(int x, int y)
     {
         if (!CanFlag(x, y)) return false;
-        grid[x, y].flagged = !grid[x, y].flagged;
+        ref var cell = ref grid[x, y]; 
+        cell.flagged = !cell.flagged;
+        if (cell.flagged) FlagCount++;
+        else FlagCount--;
         return true;
     }
 
