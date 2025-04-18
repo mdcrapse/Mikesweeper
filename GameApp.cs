@@ -157,7 +157,7 @@ public class GameApp : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
+        GraphicsDevice.Clear(Color.Gray);
 
         _spriteBatch.Begin(transformMatrix: Matrix.CreateScale(zoom, zoom, 1f), samplerState: SamplerState.PointClamp);
 
