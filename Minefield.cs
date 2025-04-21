@@ -82,14 +82,16 @@ public class Minefield
     /// Places a bomb at the location specified and updates adjacent cell nearby bomb numbers.
     /// Does nothing if the cell is out of bounds.
     /// </summary>
-    public void PlantBomb(int x, int y)
+    /// <returns>`true` if the bomb was successfully placed at the location.</returns>
+    public bool PlantBomb(int x, int y)
     {
-        if (!IsInbounds(x, y)) return;
+        if (!IsInbounds(x, y)) return false;
         ref var cell = ref grid[x, y];
-        if (cell.bomb) return;
+        if (cell.bomb) return false;
         cell.bomb = true;
         BombCount++;
         IncrementAdjacentBombCounters(x, y);
+        return true;
     }
 
     /// <summary>Toggles the flag at the specified cell. Does nothing if the cell is out of bounds or discovered.</summary>
@@ -152,9 +154,18 @@ public class Minefield
             var xx = rng.Next(Width);
             var yy = rng.Next(Height);
             if (xx >= x - 1 && xx <= x + 1 && yy >= y - 1 && yy <= y + 1) continue;
-            PlantBomb(xx, yy);
-            num_bombs--;
+            if (PlantBomb(xx, yy)) num_bombs--;
         }
+    }
+
+    public int FlagsNearby(int x, int y) {
+        int num = 0;
+        ForEachAdjacentCell(x, y, (xx, yy) => {if (grid[xx, yy].flagged) num++;});
+        return num;
+    }
+
+    public int BombsNearby(int x, int y) {
+        return IsInbounds(x, y) ? grid[x, y].nearby_bombs : 0;
     }
 
     /// <summary>Increments the bombs counter around adjacent tiles.</summary>
@@ -168,7 +179,7 @@ public class Minefield
     /// Applies the function to the adjacent cells of the specified position.
     /// Does not apply the function to cells that are out of bounds.
     /// </summary>
-    private void ForEachAdjacentCell(int x, int y, Action<int, int> f)
+    public void ForEachAdjacentCell(int x, int y, Action<int, int> f)
     {
         for (int yy = Math.Max(0, y - 1); yy < Math.Min(Height, y + 2); yy++)
         {

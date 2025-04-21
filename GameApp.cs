@@ -13,7 +13,7 @@ public class GameApp : Game
 
     private Minefield minefield = new();
     private int zoom = 4;
-    private bool has_started = false;
+    private bool has_started { get => minefield.DiscoveredCells != 0; }
     private bool game_over = false;
 
     private MouseState currentMouse;
@@ -66,6 +66,7 @@ public class GameApp : Game
 
         UpdateMouse();
         UpdateDiscovery();
+        UpdateLargeDiscover();
         UpdateFlag();
         if (!game_over && has_started) time += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -82,6 +83,11 @@ public class GameApp : Game
             && previousMouse.LeftButton == ButtonState.Released;
     }
 
+    private bool IsLargeDiscoverJustReleased() {
+        return currentMouse.MiddleButton == ButtonState.Pressed
+            && previousMouse.MiddleButton == ButtonState.Released;
+    }
+
     private bool IsFlagButtonJustReleased() {
         return currentMouse.RightButton == ButtonState.Pressed
             && previousMouse.RightButton == ButtonState.Released;
@@ -90,20 +96,27 @@ public class GameApp : Game
     private void UpdateDiscovery() {
         if (IsDiscoverButtonJustReleased())
         {
-            // Discover cell
-            if (game_over)
-            {
-                Restart();
-            }
-            else
-            {
-                if (!has_started) has_started = true;
-                if (minefield.Discover(cursor.X, cursor.Y) && minefield.IsBomb(cursor.X, cursor.Y)) {
-                    game_over = true;
-                }
-                if (!game_over) game_over = HasWon();
+            if (game_over) Restart();
+            else Discover(cursor.X, cursor.Y);
+        }
+    }
+
+    private void UpdateLargeDiscover() {
+        if (has_started
+            && !game_over
+            && IsLargeDiscoverJustReleased())
+        {
+            if (minefield.FlagsNearby(cursor.X, cursor.Y) == minefield.BombsNearby(cursor.X, cursor.Y)) {
+                minefield.ForEachAdjacentCell(cursor.X, cursor.Y, Discover);
             }
         }
+    }
+
+    private void Discover(int x, int y) {
+        if (minefield.Discover(x, y) && minefield.IsBomb(x, y)) {
+            game_over = true;
+        }
+        if (!game_over) game_over = HasWon();
     }
 
     private void UpdateFlag() {
@@ -124,7 +137,6 @@ public class GameApp : Game
 
     private void Restart() {
         time = 0;
-        has_started = false;
         game_over = false;
         minefield.Reset();
     }
@@ -163,7 +175,7 @@ public class GameApp : Game
 
         DrawMinefield();
         DrawNumber(Vector2.Zero, minefield.BombCount - minefield.FlagCount, 3);
-        DrawNumber(new Vector2(minefield.Width * 16 - 13 * 3, 0f), (int)time, 3);
+        DrawNumber(new Vector2(minefield.Width * 16 - 13 * 3, 0f), Math.Min((int)time, 999), 3);
 
         _spriteBatch.End();
 
