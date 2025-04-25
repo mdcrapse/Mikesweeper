@@ -1,6 +1,7 @@
 
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace Mikesweeper;
 
@@ -47,8 +48,8 @@ public class Minefield
     /// <summary>Converts position to an index in the minefield.</summary>
     /// <returns>the index at the position. The returned index may be out of bounds.</returns>
     public Point PositionToIndex(int x, int y) {
-        int xx = (x - Position.X) / TileSize;
-        int yy = (y - Position.Y) / TileSize;
+        int xx = (int)Math.Floor(((float)x - Position.X) / TileSize);
+        int yy = (int)Math.Floor(((float)y - Position.Y) / TileSize);
         return new Point(xx, yy);
     }
 
@@ -142,6 +143,10 @@ public class Minefield
     /// <returns>`true` if the position is a bomb cell.</returns>
     public bool IsBomb(int x, int y) {
         return IsInbounds(x, y) && grid[x, y].bomb;
+    }
+
+    public bool IsDiscovered(int x, int y) {
+        return IsInbounds(x, y) && grid[x, y].discovered;
     }
 
     public void Randomize(int x, int y) {

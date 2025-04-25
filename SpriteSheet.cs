@@ -16,4 +16,9 @@ public static class SpriteSheet {
     public static readonly Rectangle[] Numbers = [.. Enumerable.Range(0, 10).Select(x => new Rectangle(1 + x * 14, 1, 13, 23))];
     public static readonly Rectangle EmptyNumber = new(141, 1, 13, 23);
     public static readonly Rectangle NegativeNumber = new(155, 1, 13, 23);
+    public static readonly Rectangle Options = new(1, 84, 24, 24);
+    public static readonly Rectangle Info = new(26, 84, 24, 24);
+    public static readonly Rectangle FaceHappy = new(1, 25, 24, 24);
+    public static readonly Rectangle ButtonUnpressed = new(51, 84, 24, 24);
+    public static readonly Rectangle ButtonPressed = new(76, 84, 24, 24);
 }
