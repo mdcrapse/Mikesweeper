@@ -1,7 +1,6 @@
 
 using System;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
 namespace Mikesweeper;
 
@@ -145,10 +144,12 @@ public class Minefield
         return IsInbounds(x, y) && grid[x, y].bomb;
     }
 
+    /// <returns>`true` if the position is a discovered cell.</returns>
     public bool IsDiscovered(int x, int y) {
         return IsInbounds(x, y) && grid[x, y].discovered;
     }
 
+    /// <summary>Randomly places bombs around the minefield while avoiding the specified location.</summary>
     public void Randomize(int x, int y) {
         // Helps avoid a potential infinite loop
         var num_bombs = Math.Min(TargetBombCount, TotalCells - 9);
@@ -163,12 +164,14 @@ public class Minefield
         }
     }
 
+    /// <returns>the number of flags in adjacent cells.</returns>
     public int FlagsNearby(int x, int y) {
         int num = 0;
         ForEachAdjacentCell(x, y, (xx, yy) => {if (grid[xx, yy].flagged) num++;});
         return num;
     }
 
+    /// <returns>the number of bombs in adjacent cells.</returns>
     public int BombsNearby(int x, int y) {
         return IsInbounds(x, y) ? grid[x, y].nearby_bombs : 0;
     }

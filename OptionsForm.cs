@@ -3,6 +3,7 @@ using System.Windows.Forms;
 
 namespace Mikesweeper;
 
+/// <summary>The options/settings menu popup.</summary>
 public class OptionsForm : Form
 {
     public int Bombs => (int)bombs.Value;
@@ -96,6 +97,8 @@ public class OptionsForm : Form
             Padding = new Padding(10),
         };
 
+        // ============================== DIFFICULTY ==============================
+
         var level = AddGroupFlow("Difficulty");
         var easy = new RadioButton { Text = "Easy", Width = 200, Checked = options.difficulty == Difficulty.Easy };
         level.Controls.Add(easy);
@@ -103,7 +106,7 @@ public class OptionsForm : Form
         {
             if (easy.Checked) {
                 difficulty = Difficulty.Easy;
-                bombs.Value = 15;
+                bombs.Value = 10;
                 rows.Value = 10;
                 columns.Value = 10;
             }
@@ -116,8 +119,8 @@ public class OptionsForm : Form
             if (normal.Checked) {
                 difficulty = Difficulty.Normal;
                 bombs.Value = 25;
-                rows.Value = 15;
-                columns.Value = 10;
+                rows.Value = 10;
+                columns.Value = 15;
             }
         };
 
@@ -142,6 +145,8 @@ public class OptionsForm : Form
             }
         };
 
+        // ============================== MINEFIELD ==============================
+
         var settings = AddGroupFlow("Minefield");
 
         (var flow_bombs, bombs) = NewNumericLabelled("Bombs", Options.BombsMin, Options.BombsMax, options.Bombs);
@@ -159,13 +164,15 @@ public class OptionsForm : Form
         alwaysChord = new CheckBox { Text = "Always Chord", Width = 200, Checked = options.AlwaysChord };
         settings.Controls.Add(alwaysChord);
 
+        // ============================== GRAPHICS ==============================
+
         var graphics = AddGroupFlow("Graphics");
         (var flow_zoom, zoom) = NewNumericLabelled("Zoom", Options.ZoomMin, Options.ZoomMax, options.Zoom);
         graphics.Controls.Add(flow_zoom);
         puppyMode = new CheckBox { Text = "Puppy Mode", Width = 200, Checked = options.PuppyMode };
         graphics.Controls.Add(puppyMode);
 
-        // Label
+        // ============================== BUTTONS ==============================
 
         // OK Button
         okButton = new Button()
